@@ -423,6 +423,7 @@
   <nav>
     <button class="active" onclick="showSection('presupuesto', this)">Presupuesto</button>
     <button onclick="showSection('simulador', this)">Simulador de fondos</button>
+    <button onclick="showSection('casa', this)">Plan casa</button>
   </nav>
 </header>
 
@@ -433,13 +434,8 @@
   ════════════════════════════════════════════════ -->
   <section id="presupuesto" class="section active">
 
-    <p class="section-eyebrow">Planificació mensual</p>
+    <p class="section-eyebrow">Planificación mensual</p>
     <h2 class="section-title">Presupuesto del hogar</h2>
-
-    <div class="version-picker">
-      <button class="version-btn active" onclick="setVersion('v2', this)">V2.0 <span class="badge">Objetivo</span></button>
-      <button class="version-btn" onclick="setVersion('v1', this)">Versión original</button>
-    </div>
 
     <!-- Métricas -->
     <div class="metrics" id="metrics-grid">
@@ -467,16 +463,50 @@
 
     <!-- Desglose -->
     <div class="card">
-      <p class="card-title">Desglose de gastos</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <p class="card-title" style="margin-bottom:0">Desglose de gastos</p>
+        <div style="display:flex;background:var(--cream);border-radius:20px;padding:3px;gap:2px;border:1px solid var(--rule)">
+          <button id="modo-prop" onclick="setModoReparto('prop')"
+            style="font-size:12px;font-weight:500;font-family:var(--font-body);padding:4px 12px;border-radius:16px;border:none;cursor:pointer;transition:all .15s;background:var(--ink);color:var(--cream)">
+            Por nómina
+          </button>
+          <button id="modo-50" onclick="setModoReparto('50')"
+            style="font-size:12px;font-weight:500;font-family:var(--font-body);padding:4px 12px;border-radius:16px;border:none;cursor:pointer;transition:all .15s;background:transparent;color:var(--ink-muted)">
+            Al 50%
+          </button>
+        </div>
+      </div>
       <div id="gastos-list"><!-- Generado por JS --></div>
       <div class="ocio-row" id="ocio-row">
         <div>
           <div class="gasto-nombre">✦ Ocio + caprichos <span class="badge">calculado</span></div>
-          <div class="gasto-detalle">Ingresos − todos los gastos</div>
+          <div class="gasto-detalle">Nómina de cada uno − sus gastos</div>
         </div>
         <div>
           <div class="gasto-valor" id="ocio-val">—</div>
           <div class="gasto-anual" id="ocio-pct">—</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;padding:0 2px">
+        <div style="background:var(--gold-light);border-radius:var(--radius);padding:8px 10px">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Ocio Juan</div>
+          <div style="font-family:var(--font-mono);font-size:14px;font-weight:500;color:var(--gold-dim)" id="ocio-juan">—</div>
+        </div>
+        <div style="background:var(--gold-light);border-radius:var(--radius);padding:8px 10px">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Ocio Laura</div>
+          <div style="font-family:var(--font-mono);font-size:14px;font-weight:500;color:var(--gold-dim)" id="ocio-laura">—</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)">
+        <div style="background:var(--cream);border-radius:var(--radius);padding:10px 12px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px">Total Juan</div>
+          <div style="font-family:var(--font-mono);font-size:16px;font-weight:500;color:var(--ink)" id="total-juan-gastos">—</div>
+          <div style="font-size:11px;color:var(--ink-faint);margin-top:3px" id="total-juan-pct">—</div>
+        </div>
+        <div style="background:var(--cream);border-radius:var(--radius);padding:10px 12px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px">Total Laura</div>
+          <div style="font-family:var(--font-mono);font-size:16px;font-weight:500;color:var(--ink)" id="total-laura-gastos">—</div>
+          <div style="font-size:11px;color:var(--ink-faint);margin-top:3px" id="total-laura-pct">—</div>
         </div>
       </div>
     </div>
@@ -580,6 +610,122 @@
 
   </section>
 
+  <!-- ═══════════════════════════════════════════════
+       SECCIÓN 3: PLAN CASA
+  ════════════════════════════════════════════════ -->
+  <section id="casa" class="section">
+
+    <p class="section-eyebrow">Objetivo a medio plazo</p>
+    <h2 class="section-title">Plan de compra — casa en Utrera</h2>
+
+    <!-- Parámetros -->
+    <div class="card">
+      <p class="card-title">Parámetros de la compra</p>
+      <div class="sim-controls">
+        <div class="sim-field">
+          <label>Precio de la vivienda</label>
+          <div class="range-row">
+            <input type="range" id="casa-precio" min="200000" max="450000" step="5000" value="300000" oninput="updateCasa()">
+            <span class="val"><span id="casa-precio-out">300.000</span> €</span>
+          </div>
+        </div>
+        <div class="sim-field">
+          <label>Ahorro actual (Trade Republic)</label>
+          <div class="range-row">
+            <input type="range" id="casa-ahorro-actual" min="0" max="100000" step="1000" value="50000" oninput="updateCasa()">
+            <span class="val"><span id="casa-ahorro-actual-out">50.000</span> €</span>
+          </div>
+        </div>
+        <div class="sim-field">
+          <label>Ahorro mensual para la casa</label>
+          <div class="range-row">
+            <input type="range" id="casa-ahorro-mes" min="200" max="2000" step="50" value="1000" oninput="updateCasa()">
+            <span class="val"><span id="casa-ahorro-mes-out">1.000</span> €</span>
+          </div>
+        </div>
+        <div class="sim-field">
+          <label>Interés cuenta remunerada</label>
+          <div class="range-row">
+            <input type="range" id="casa-interes" min="1" max="4" step="0.25" value="2.25" oninput="updateCasa()">
+            <span class="val"><span id="casa-interes-out">2,25</span>%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Métricas necesidad -->
+    <div class="card">
+      <p class="card-title">Lo que necesitáis reunir</p>
+      <div class="metrics" style="margin-bottom:0">
+        <div class="metric">
+          <div class="metric-label">Entrada (20%)</div>
+          <div class="metric-value blue" id="casa-m-entrada">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">ITP Andalucía (7%)</div>
+          <div class="metric-value" style="color:var(--ink-muted)" id="casa-m-itp">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Notaría + registro</div>
+          <div class="metric-value" style="color:var(--ink-muted)">~3.000 €</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Total necesario</div>
+          <div class="metric-value gold" id="casa-m-total">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado: cuándo lo lográis -->
+    <div id="casa-resultado-card" class="card" style="border-left:3px solid var(--teal)">
+      <p class="card-title">Cuándo estaréis listos</p>
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:.5rem">
+        <span style="font-family:var(--font-display);font-size:2.2rem;color:var(--teal)" id="casa-meses-txt">—</span>
+        <span style="font-size:14px;color:var(--ink-muted)" id="casa-fecha-txt">—</span>
+      </div>
+      <p style="font-size:13px;color:var(--ink-muted)" id="casa-resultado-detalle">—</p>
+    </div>
+
+    <!-- Gráfico acumulación -->
+    <div class="card">
+      <p class="card-title">Evolución del ahorro acumulado</p>
+      <div class="legend">
+        <span><b style="background:#185FA5"></b>Ahorro acumulado</span>
+        <span><b style="background:#B08D3C"></b>Objetivo</span>
+      </div>
+      <div style="position:relative;width:100%;height:280px">
+        <canvas id="casaChart" role="img" aria-label="Gráfico de evolución del ahorro acumulado hacia el objetivo de compra de vivienda"></canvas>
+      </div>
+    </div>
+
+    <!-- Hipoteca estimada -->
+    <div class="card">
+      <p class="card-title">Hipoteca estimada tras la compra</p>
+      <div class="metrics" style="margin-bottom:1rem">
+        <div class="metric">
+          <div class="metric-label">Capital a financiar (80%)</div>
+          <div class="metric-value blue" id="hip-capital">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Cuota a 25 años (3,5%)</div>
+          <div class="metric-value gold" id="hip-cuota25">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Cuota a 30 años (3,5%)</div>
+          <div class="metric-value" style="color:var(--ink-muted)" id="hip-cuota30">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">% ingresos (25 años)</div>
+          <div class="metric-value" id="hip-pct">—</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--ink-faint);line-height:1.6">
+        Simulación orientativa a tipo fijo del 3,5%. La cuota real dependerá de las condiciones del banco, la tasación y el perfil de riesgo. Los bancos recomiendan que la hipoteca no supere el 30-35% de los ingresos netos.
+      </p>
+    </div>
+
+  </section>
+
 </main>
 
 <footer>
@@ -610,19 +756,6 @@ function getIcon(nombre) {
 }
 
 const budgetData = {
-  v1: {
-    juan: 2448,
-    laura: 2325.77,
-    gastos: [
-      { nombre: 'Hipoteca', juan: 350, laura: 350 },
-      { nombre: 'Ahorro común', juan: 300, laura: 300 },
-      { nombre: 'Gastos comunes', juan: 250, laura: 250 },
-      { nombre: 'Seguro de hogar', juan: 8.51, laura: 8.51 },
-      { nombre: 'Coche (MG4)', juan: 200, laura: 200 },
-      { nombre: 'Ahorro personal Juan', juan: 1050, laura: 0 },
-      { nombre: 'Ahorro personal Laura', juan: 0, laura: 925 },
-    ]
-  },
   v2: {
     juan: 2386,
     laura: 2375.77,
@@ -639,12 +772,43 @@ const budgetData = {
   }
 };
 
+/* Estado editable: copia viva de los gastos */
+let gastosState = {
+  v2: budgetData.v2.gastos.map(g => ({ ...g })),
+};
+
 let version = 'v2';
 let salarios = {
-  v1: { juan: budgetData.v1.juan, laura: budgetData.v1.laura },
   v2: { juan: budgetData.v2.juan, laura: budgetData.v2.laura }
 };
 let distChart = null;
+
+/* ═══════════════════════════════════════
+   PERSISTENCIA localStorage
+═══════════════════════════════════════ */
+const STORAGE_KEY = 'palomar_state_v1';
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      salarios,
+      gastosState,
+      modoReparto
+    }));
+  } catch(e) { /* silencioso */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (saved.salarios?.v2) salarios = saved.salarios;
+    if (saved.gastosState?.v2?.length) gastosState = saved.gastosState;
+    if (saved.modoReparto) modoReparto = saved.modoReparto;
+    return true;
+  } catch(e) { return false; }
+}
 
 /* ═══════════════════════════════════════
    UTILIDADES
@@ -655,10 +819,14 @@ function fmt2(n) { return n.toLocaleString('es-ES', { minimumFractionDigits: 2, 
 function calcBudget(v) {
   const sj = salarios[v].juan, sl = salarios[v].laura;
   const total = sj + sl;
-  const gastosMes = budgetData[v].gastos.reduce((a, g) => a + g.juan + g.laura, 0);
-  const ahorro = budgetData[v].gastos.filter(g => esAhorro(g.nombre)).reduce((a, g) => a + g.juan + g.laura, 0);
+  const gastosMes = gastosState[v].reduce((a, g) => a + g.juan + g.laura, 0);
+  const ahorro = gastosState[v].filter(g => esAhorro(g.nombre)).reduce((a, g) => a + g.juan + g.laura, 0);
   const ocio = total - gastosMes;
-  return { total, gastosMes, ahorro, ocio };
+  const totalJuan = gastosState[v].reduce((a, g) => a + g.juan, 0);
+  const totalLaura = gastosState[v].reduce((a, g) => a + g.laura, 0);
+  const ocioJuan = sj - totalJuan;
+  const ocioLaura = sl - totalLaura;
+  return { total, gastosMes, ahorro, ocio, totalJuan, totalLaura, ocioJuan, ocioLaura };
 }
 
 /* ═══════════════════════════════════════
@@ -666,7 +834,6 @@ function calcBudget(v) {
 ═══════════════════════════════════════ */
 function renderBudget() {
   const v = version;
-  const d = budgetData[v];
   const { total, gastosMes, ahorro, ocio } = calcBudget(v);
   const pctAhorro = total > 0 ? (ahorro / total * 100) : 0;
   const pctOcio = total > 0 ? (ocio / total * 100) : 0;
@@ -685,22 +852,8 @@ function renderBudget() {
   document.getElementById('input-laura').value = sl;
   document.getElementById('total-ingresos').textContent = fmt2(total);
 
-  /* Gastos */
-  document.getElementById('gastos-list').innerHTML = d.gastos.map(g => `
-    <div class="gasto-row">
-      <div class="gasto-left">
-        <div class="gasto-icon">${getIcon(g.nombre)}</div>
-        <div>
-          <div class="gasto-nombre">${g.nombre}</div>
-          <div class="gasto-detalle">Juan: ${fmt2(g.juan)} · Laura: ${fmt2(g.laura)}</div>
-        </div>
-      </div>
-      <div>
-        <div class="gasto-valor">${fmt2(g.juan + g.laura)}/mes</div>
-        <div class="gasto-anual">${fmt((g.juan + g.laura) * 12)}/año</div>
-      </div>
-    </div>
-  `).join('');
+  /* Gastos editables */
+  renderGastos(v);
 
   /* Ocio */
   document.getElementById('ocio-val').textContent = fmt2(Math.max(0, ocio)) + '/mes';
@@ -709,9 +862,172 @@ function renderBudget() {
   buildDistChart(v, ocio, ahorro);
 }
 
+let modoReparto = 'prop'; // 'prop' | '50'
+
+function setModoReparto(modo) {
+  modoReparto = modo;
+  document.getElementById('modo-prop').style.background = modo === 'prop' ? 'var(--ink)' : 'transparent';
+  document.getElementById('modo-prop').style.color = modo === 'prop' ? 'var(--cream)' : 'var(--ink-muted)';
+  document.getElementById('modo-50').style.background = modo === '50' ? 'var(--ink)' : 'transparent';
+  document.getElementById('modo-50').style.color = modo === '50' ? 'var(--cream)' : 'var(--ink-muted)';
+  /* Recalcular todos los gastos con el nuevo modo */
+  const { pj, pl } = getProporciones(version);
+  gastosState[version].forEach(g => {
+    const total = g.juan + g.laura;
+    g.juan = total * pj;
+    g.laura = total * pl;
+  });
+  renderGastos(version);
+  refreshOcioAndMetrics();
+  saveState();
+}
+
+function getProporciones(v) {
+  if (modoReparto === '50') return { pj: 0.5, pl: 0.5 };
+  const sj = salarios[v].juan, sl = salarios[v].laura;
+  const total = sj + sl;
+  if (total === 0) return { pj: 0.5, pl: 0.5 };
+  return { pj: sj / total, pl: sl / total };
+}
+
+function renderGastos(v) {
+  const gastos = gastosState[v];
+  const { pj, pl } = getProporciones(v);
+  document.getElementById('gastos-list').innerHTML = gastos.map((g, i) => {
+    const total = g.juan + g.laura;
+    return `
+    <div class="gasto-row" id="gasto-row-${i}" style="align-items:flex-start;padding:10px 0;gap:8px">
+      <div class="gasto-left" style="flex:1;min-width:0;gap:8px;align-items:center">
+        <div class="gasto-icon" style="flex-shrink:0">${getIcon(g.nombre)}</div>
+        <input
+          class="gasto-name-input"
+          value="${g.nombre}"
+          oninput="onGastoNombre(${i}, this.value)"
+          style="flex:1;min-width:0;font-size:14px;font-weight:500;font-family:var(--font-body);color:var(--ink);background:transparent;border:none;border-bottom:1px dashed var(--ink-faint);padding:2px 4px;outline:none;width:100%"
+          title="Editar nombre"
+        >
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:6px">
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value="${Math.round(total)}"
+            oninput="onGastoTotal(${i}, this.value)"
+            style="width:90px;font-family:var(--font-mono);font-size:13px;font-weight:500;text-align:right;padding:4px 8px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--cream);color:var(--ink);outline:none"
+            title="Total mensual (se reparte por proporción salarial)"
+          >
+          <span style="font-size:12px;color:var(--ink-faint)">/mes</span>
+          <button
+            onclick="removeGasto(${i})"
+            title="Eliminar categoría"
+            style="background:none;border:none;cursor:pointer;color:var(--ink-faint);font-size:16px;padding:2px 4px;line-height:1;border-radius:4px"
+            onmouseover="this.style.color='var(--red)'"
+            onmouseout="this.style.color='var(--ink-faint)'"
+          >×</button>
+        </div>
+        <div class="gasto-detalle-row" style="font-size:11px;color:var(--ink-faint)">
+          Juan ${modoReparto === '50' ? '50%' : (pj*100).toFixed(0)+'%'}: ${fmt2(g.juan)} · Laura ${modoReparto === '50' ? '50%' : (pl*100).toFixed(0)+'%'}: ${fmt2(g.laura)} · ${fmt(total * 12)}/año
+        </div>
+      </div>
+    </div>
+  `}).join('');
+
+  /* Botón añadir categoría */
+  document.getElementById('gastos-list').insertAdjacentHTML('beforeend', `
+    <div style="padding:10px 0 2px">
+      <button
+        onclick="addGasto()"
+        style="font-size:13px;color:var(--gold-dim);background:none;border:1px dashed var(--gold);border-radius:var(--radius);padding:6px 14px;cursor:pointer;font-family:var(--font-body);width:100%;transition:background .15s"
+        onmouseover="this.style.background='var(--gold-light)'"
+        onmouseout="this.style.background='none'"
+      >+ Añadir categoría</button>
+    </div>
+  `);
+}
+
+function refreshOcioAndMetrics() {
+  const v = version;
+  const { total, gastosMes, ahorro, ocio, totalJuan, totalLaura, ocioJuan, ocioLaura } = calcBudget(v);
+  const pctOcio = total > 0 ? (ocio / total * 100) : 0;
+  const pctAhorro = total > 0 ? (ahorro / total * 100) : 0;
+  const sj = salarios[v].juan, sl = salarios[v].laura;
+
+  document.getElementById('ocio-val').textContent = fmt2(Math.max(0, ocio)) + '/mes';
+  document.getElementById('ocio-pct').textContent = pctOcio.toFixed(1) + '% de ingresos';
+
+  const elOJ = document.getElementById('ocio-juan');
+  const elOL = document.getElementById('ocio-laura');
+  if (elOJ) elOJ.textContent = fmt2(Math.max(0, ocioJuan)) + '/mes';
+  if (elOL) elOL.textContent = fmt2(Math.max(0, ocioLaura)) + '/mes';
+
+  const ms = document.querySelectorAll('#metrics-grid .metric-value');
+  if (ms[0]) ms[0].textContent = fmt(total);
+  if (ms[1]) ms[1].textContent = fmt(gastosMes);
+  if (ms[2]) { ms[2].textContent = fmt(ocio); ms[2].className = 'metric-value ' + (ocio >= 0 ? 'green' : 'red'); }
+  if (ms[3]) ms[3].textContent = pctAhorro.toFixed(1) + '%';
+
+  /* Totales por persona */
+  const pctJ = sj > 0 ? (totalJuan / sj * 100) : 0;
+  const pctL = sl > 0 ? (totalLaura / sl * 100) : 0;
+  const elTJ = document.getElementById('total-juan-gastos');
+  const elTL = document.getElementById('total-laura-gastos');
+  const elPJ = document.getElementById('total-juan-pct');
+  const elPL = document.getElementById('total-laura-pct');
+  if (elTJ) elTJ.textContent = fmt2(totalJuan) + '/mes';
+  if (elTL) elTL.textContent = fmt2(totalLaura) + '/mes';
+  if (elPJ) elPJ.textContent = pctJ.toFixed(1) + '% de su nómina';
+  if (elPL) elPL.textContent = pctL.toFixed(1) + '% de su nómina';
+
+  buildDistChart(v, ocio, ahorro);
+}
+
+function onGastoNombre(i, val) {
+  gastosState[version][i].nombre = val;
+  const row = document.getElementById(`gasto-row-${i}`);
+  if (row) row.querySelector('.gasto-icon').textContent = getIcon(val);
+  refreshOcioAndMetrics();
+  saveState();
+}
+
+function onGastoTotal(i, val) {
+  const total = parseFloat(val) || 0;
+  const { pj, pl } = getProporciones(version);
+  gastosState[version][i].juan = total * pj;
+  gastosState[version][i].laura = total * pl;
+  const row = document.getElementById(`gasto-row-${i}`);
+  if (row) {
+    const detalle = row.querySelector('.gasto-detalle-row');
+    const labelJ = modoReparto === '50' ? '50%' : (pj*100).toFixed(0)+'%';
+    const labelL = modoReparto === '50' ? '50%' : (pl*100).toFixed(0)+'%';
+    if (detalle) detalle.textContent = `Juan ${labelJ}: ${fmt2(total*pj)} · Laura ${labelL}: ${fmt2(total*pl)} · ${fmt(total * 12)}/año`;
+  }
+  refreshOcioAndMetrics();
+  saveState();
+}
+
+function removeGasto(i) {
+  gastosState[version].splice(i, 1);
+  renderGastos(version);
+  refreshOcioAndMetrics();
+  saveState();
+}
+
+function addGasto() {
+  gastosState[version].push({ nombre: 'Nueva categoría', juan: 0, laura: 0 });
+  renderGastos(version);
+  saveState();
+  const rows = document.querySelectorAll('#gastos-list .gasto-row');
+  const lastRow = rows[rows.length - 1];
+  if (lastRow) {
+    const input = lastRow.querySelector('.gasto-name-input');
+    if (input) { input.select(); input.focus(); }
+  }
+}
+
 function buildDistChart(v, ocio, ahorro) {
-  const d = budgetData[v];
-  const items = d.gastos.filter(g => !esAhorro(g.nombre));
+  const items = gastosState[v].filter(g => !esAhorro(g.nombre));
   const labels = items.map(g => g.nombre).concat(['Ahorro e inversión', 'Ocio + caprichos']);
   const values = items.map(g => Math.round(g.juan + g.laura)).concat([Math.round(ahorro), Math.round(Math.max(0, ocio))]);
   const colors = items.map(() => '#185FA5').concat(['#0F6E56', '#B08D3C']);
@@ -739,24 +1055,18 @@ function buildDistChart(v, ocio, ahorro) {
 /* ═══════════════════════════════════════
    INTERACCIONES PRESUPUESTO
 ═══════════════════════════════════════ */
-function setVersion(v, btn) {
-  version = v;
-  document.querySelectorAll('.version-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderBudget();
-}
-
 function onSalaryChange(who, val) {
   salarios[version][who] = parseFloat(val) || 0;
-  const { total, ahorro, ocio } = calcBudget(version);
-  const pctOcio = total > 0 ? (ocio / total * 100) : 0;
-  document.getElementById('total-ingresos').textContent = fmt2(total);
-  document.getElementById('ocio-val').textContent = fmt2(Math.max(0, ocio)) + '/mes';
-  document.getElementById('ocio-pct').textContent = pctOcio.toFixed(1) + '% de ingresos';
-  const ms = document.querySelectorAll('.metric-value');
-  if (ms[0]) ms[0].textContent = fmt(total);
-  if (ms[2]) { ms[2].textContent = fmt(ocio); ms[2].className = 'metric-value ' + (ocio >= 0 ? 'green' : 'red'); }
-  buildDistChart(version, ocio, ahorro);
+  const { pj, pl } = getProporciones(version);
+  gastosState[version].forEach(g => {
+    const total = g.juan + g.laura;
+    g.juan = total * pj;
+    g.laura = total * pl;
+  });
+  document.getElementById('total-ingresos').textContent = fmt2(salarios[version].juan + salarios[version].laura);
+  renderGastos(version);
+  refreshOcioAndMetrics();
+  saveState();
 }
 
 /* ═══════════════════════════════════════
@@ -887,11 +1197,151 @@ function showSection(id, btn) {
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
   if (id === 'simulador') updateSim();
+  if (id === 'casa') updateCasa();
+}
+
+/* ═══════════════════════════════════════
+   PLAN CASA
+═══════════════════════════════════════ */
+let casaChart = null;
+
+function calcCuota(capital, years, rate) {
+  const r = rate / 100 / 12;
+  const n = years * 12;
+  return capital * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+}
+
+function updateCasa() {
+  const precio     = parseInt(document.getElementById('casa-precio').value);
+  const ahorroAct  = parseInt(document.getElementById('casa-ahorro-actual').value);
+  const ahorroMes  = parseInt(document.getElementById('casa-ahorro-mes').value);
+  const interes    = parseFloat(document.getElementById('casa-interes').value);
+
+  document.getElementById('casa-precio-out').textContent       = precio.toLocaleString('es-ES');
+  document.getElementById('casa-ahorro-actual-out').textContent = ahorroAct.toLocaleString('es-ES');
+  document.getElementById('casa-ahorro-mes-out').textContent    = ahorroMes.toLocaleString('es-ES');
+  document.getElementById('casa-interes-out').textContent       = interes.toFixed(2).replace('.', ',');
+
+  const entrada   = precio * 0.20;
+  const itp       = precio * 0.07;
+  const notaria   = 3000;
+  const necesario = entrada + itp + notaria;
+
+  document.getElementById('casa-m-entrada').textContent = fmt(entrada);
+  document.getElementById('casa-m-itp').textContent     = fmt(itp);
+  document.getElementById('casa-m-total').textContent   = fmt(necesario);
+
+  /* Simulación mes a mes con interés compuesto mensual */
+  const r = interes / 100 / 12;
+  let acum = ahorroAct;
+  let mesesHasta = null;
+  const labels = ['Hoy'], valores = [Math.round(acum)];
+  const maxMeses = 84;
+
+  for (let m = 1; m <= maxMeses; m++) {
+    acum = acum * (1 + r) + ahorroMes;
+    if (m % 6 === 0) {
+      labels.push('M' + m);
+      valores.push(Math.round(acum));
+    }
+    if (mesesHasta === null && acum >= necesario) mesesHasta = m;
+  }
+
+  /* Resultado textual */
+  const resCard = document.getElementById('casa-resultado-card');
+  if (mesesHasta !== null) {
+    const anios = Math.floor(mesesHasta / 12);
+    const meses = mesesHasta % 12;
+    const ahora = new Date(2026, 5); // junio 2026
+    const fecha = new Date(ahora.getFullYear(), ahora.getMonth() + mesesHasta);
+    const fechaTxt = fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    document.getElementById('casa-meses-txt').textContent =
+      anios > 0 ? `${anios} año${anios > 1 ? 's' : ''} y ${meses} mes${meses !== 1 ? 'es' : ''}` : `${mesesHasta} meses`;
+    document.getElementById('casa-fecha-txt').textContent = '→ ' + fechaTxt;
+    document.getElementById('casa-resultado-detalle').textContent =
+      `Con ${fmt(ahorroMes)}/mes y el interés de la cuenta remunerada, alcanzaréis los ${fmt(necesario)} necesarios en ${mesesHasta} meses. Os sobra margen antes del límite de 6 años.`;
+    resCard.style.borderLeftColor = 'var(--teal)';
+    document.getElementById('casa-meses-txt').style.color = 'var(--teal)';
+  } else {
+    document.getElementById('casa-meses-txt').textContent = 'Más de 7 años';
+    document.getElementById('casa-fecha-txt').textContent = 'Ajusta los parámetros';
+    document.getElementById('casa-resultado-detalle').textContent =
+      'Con la configuración actual no alcanzáis el objetivo en 7 años. Prueba a aumentar el ahorro mensual o ajustar el precio objetivo.';
+    resCard.style.borderLeftColor = 'var(--red)';
+    document.getElementById('casa-meses-txt').style.color = 'var(--red)';
+  }
+
+  /* Gráfico */
+  if (casaChart) { casaChart.destroy(); casaChart = null; }
+  casaChart = new Chart(document.getElementById('casaChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Ahorro acumulado',
+          data: valores,
+          borderColor: '#185FA5',
+          backgroundColor: 'rgba(24,95,165,0.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: '#185FA5',
+        },
+        {
+          label: 'Objetivo',
+          data: Array(labels.length).fill(Math.round(necesario)),
+          borderColor: '#B08D3C',
+          borderDash: [6, 4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ' ' + Math.round(c.parsed.y).toLocaleString('es-ES') + ' €' } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: {
+          grid: { color: 'rgba(0,0,0,.06)' },
+          ticks: { callback: v => Math.round(v / 1000) + 'k €', font: { size: 11 } }
+        }
+      }
+    }
+  });
+
+  /* Hipoteca */
+  const capital = precio * 0.80;
+  const cuota25 = calcCuota(capital, 25, 3.5);
+  const cuota30 = calcCuota(capital, 30, 3.5);
+  const ingresosTotales = salarios.v2.juan + salarios.v2.laura;
+  const pct = ingresosTotales > 0 ? (cuota25 / ingresosTotales * 100) : 0;
+  const pctColor = pct <= 30 ? 'var(--teal)' : pct <= 35 ? 'var(--gold-dim)' : 'var(--red)';
+
+  document.getElementById('hip-capital').textContent  = fmt(capital);
+  document.getElementById('hip-cuota25').textContent  = fmt(cuota25) + '/mes';
+  document.getElementById('hip-cuota30').textContent  = fmt(cuota30) + '/mes';
+  document.getElementById('hip-pct').textContent      = pct.toFixed(1) + '%';
+  document.getElementById('hip-pct').style.color      = pctColor;
 }
 
 /* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
+loadState();
+/* Restaurar aspecto del toggle de modo */
+if (modoReparto === '50') {
+  document.getElementById('modo-prop').style.background = 'transparent';
+  document.getElementById('modo-prop').style.color = 'var(--ink-muted)';
+  document.getElementById('modo-50').style.background = 'var(--ink)';
+  document.getElementById('modo-50').style.color = 'var(--cream)';
+}
 renderBudget();
 </script>
 </body>
