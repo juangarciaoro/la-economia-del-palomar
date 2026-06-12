@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La economía del palomar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F7F4EE;
+    --cream-dark: #EDE9E0;
+    --ink: #1A1917;
+    --ink-muted: #6B6860;
+    --ink-faint: #B0ADA5;
+    --gold: #B08D3C;
+    --gold-light: #F2E9D3;
+    --gold-dim: #7A6128;
+    --teal: #0F6E56;
+    --teal-light: #E1F5EE;
+    --red: #A32D2D;
+    --red-light: #FCEBEB;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --rule: rgba(26,25,23,0.12);
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding: 2.5rem 0 2rem;
+    text-align: center;
+    background: var(--cream);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--cream);
+  }
+  header .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: .5rem;
+  }
+  header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+  header h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  /* ── Nav tabs ── */
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-top: 1.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  nav button {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    background: none;
+    border: none;
+    padding: .65rem 1.4rem;
+    cursor: pointer;
+    position: relative;
+    transition: color .15s;
+    letter-spacing: .01em;
+  }
+  nav button::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transition: transform .2s;
+  }
+  nav button.active { color: var(--ink); }
+  nav button.active::after { transform: scaleX(1); }
+  nav button:hover { color: var(--ink); }
+
+  /* ── Layout ── */
+  main { max-width: 860px; margin: 0 auto; padding: 0 1.25rem 4rem; }
+
+  .section {
+    display: none;
+    padding-top: 2.5rem;
+  }
+  .section.active { display: block; }
+
+  /* ── Section heading ── */
+  .section-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: .4rem;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── Version picker ── */
+  .version-picker {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+  }
+  .version-btn {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 16px;
+    border: 1px solid var(--rule);
+    border-radius: 20px;
+    background: none;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .version-btn.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+
+  /* ── Metrics grid ── */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+  .metric {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .metric-value {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .metric-value.green { color: var(--teal); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.gold { color: var(--gold-dim); }
+  .metric-value.blue { color: var(--blue); }
+
+  /* ── Cards ── */
+  .card {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 1.1rem;
+  }
+
+  /* ── Salarios ── */
+  .salarios-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .salary-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+  }
+  .salary-field input {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 9px 12px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--cream);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .15s;
+  }
+  .salary-field input:focus { border-color: var(--gold); }
+  .salary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: .9rem;
+    border-top: 1px solid var(--rule);
+  }
+  .salary-total-label { font-size: 13px; color: var(--ink-muted); }
+  .salary-total-value {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* ── Gasto rows ── */
+  .gasto-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .gasto-row:last-child { border-bottom: none; }
+  .gasto-nombre {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .gasto-detalle {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 2px;
+  }
+  .gasto-valor {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    text-align: right;
+  }
+  .gasto-anual {
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-align: right;
+    margin-top: 2px;
+  }
+  .gasto-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--cream-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .gasto-left { display: flex; align-items: center; }
+
+  .ocio-row {
+    background: var(--gold-light);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ocio-row .gasto-nombre { color: var(--gold-dim); }
+  .ocio-row .gasto-detalle { color: var(--gold); }
+  .ocio-row .gasto-valor { color: var(--gold-dim); }
+  .ocio-row .gasto-anual { color: var(--gold); }
+
+  /* ── Chart legend ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend b {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* ── Simulador ── */
+  .sim-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+  .sim-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+  .sim-field .range-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sim-field input[type=range] {
+    flex: 1;
+    accent-color: var(--gold);
+  }
+  .sim-field .val {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    min-width: 70px;
+    text-align: right;
+  }
+
+  /* ── Disclaimer ── */
+  .disclaimer {
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.6;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: var(--rule);
+    margin: 2rem 0;
+  }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--gold-light);
+    color: var(--gold-dim);
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 2rem 0;
+    font-size: 12px;
+    color: var(--ink-faint);
+    border-top: 1px solid var(--rule);
+    margin-top: 2rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 560px) {
+    .salarios-grid { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .sim-controls { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Planificación familiar</p>
+  <h1>La economía del <em>palomar</em></h1>
+  <nav>
+    <button class="active" onclick="showSection('presupuesto', this)">Presupuesto</button>
+    <button onclick="showSection('simulador', this)">Simulador de fondos</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ═══════════════════════════════════════════════
+       SECCIÓN 1: PRESUPUESTO
+  ════════════════════════════════════════════════ -->
+  <section id="presupuesto" class="section active">
+
+    <p class="section-eyebrow">Planificación mensual</p>
+    <h2 class="section-title">Presupuesto del hogar</h2>
+
+    <div class="version-picker">
+      <button class="version-btn active" onclick="setVersion('v2', this)">V2.0 <span class="badge">Objetivo</span></button>
+      <button class="version-btn" onclick="setVersion('v1', this)">Versión original</button>
+    </div>
+
+    <!-- Métricas -->
+    <div class="metrics" id="metrics-grid">
+      <!-- Generado por JS -->
+    </div>
+
+    <!-- Salarios -->
+    <div class="card">
+      <p class="card-title">Ingresos</p>
+      <div class="salarios-grid">
+        <div class="salary-field">
+          <label>Nómina Juan</label>
+          <input type="number" id="input-juan" step="1" min="0" oninput="onSalaryChange('juan', this.value)">
+        </div>
+        <div class="salary-field">
+          <label>Nómina Laura</label>
+          <input type="number" id="input-laura" step="1" min="0" oninput="onSalaryChange('laura', this.value)">
+        </div>
+      </div>
+      <div class="salary-total">
+        <span class="salary-total-label">Total mensual</span>
+        <span class="salary-total-value" id="total-ingresos">—</span>
+      </div>
+    </div>
+
+    <!-- Desglose -->
+    <div class="card">
+      <p class="card-title">Desglose de gastos</p>
+      <div id="gastos-list"><!-- Generado por JS --></div>
+      <div class="ocio-row" id="ocio-row">
+        <div>
+          <div class="gasto-nombre">✦ Ocio + caprichos <span class="badge">calculado</span></div>
+          <div class="gasto-detalle">Ingresos − todos los gastos</div>
+        </div>
+        <div>
+          <div class="gasto-valor" id="ocio-val">—</div>
+          <div class="gasto-anual" id="ocio-pct">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico distribución -->
+    <div class="card">
+      <p class="card-title">Distribución mensual</p>
+      <div class="legend">
+        <span><b style="background:#185FA5"></b>Gastos del hogar</span>
+        <span><b style="background:#0F6E56"></b>Ahorro e inversión</span>
+        <span><b style="background:#B08D3C"></b>Ocio + caprichos</span>
+      </div>
+      <div style="position:relative;width:100%" id="dist-chart-wrap">
+        <canvas id="distChart" role="img" aria-label="Gráfico de barras horizontales mostrando la distribución mensual del presupuesto"></canvas>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       SECCIÓN 2: SIMULADOR
+  ════════════════════════════════════════════════ -->
+  <section id="simulador" class="section">
+
+    <p class="section-eyebrow">Proyección a largo plazo</p>
+    <h2 class="section-title">Simulador de fondo indexado S&P 500</h2>
+
+    <!-- Controles -->
+    <div class="card">
+      <p class="card-title">Parámetros</p>
+      <div class="sim-controls">
+        <div class="sim-field">
+          <label>Aportación mensual</label>
+          <div class="range-row">
+            <input type="range" id="sim-aport" min="50" max="500" step="10" value="100" oninput="updateSim()">
+            <span class="val"><span id="sim-aport-out">100</span> €</span>
+          </div>
+        </div>
+        <div class="sim-field">
+          <label>Años de inversión</label>
+          <div class="range-row">
+            <input type="range" id="sim-years" min="5" max="30" step="1" value="20" oninput="updateSim()">
+            <span class="val"><span id="sim-years-out">20</span> años</span>
+          </div>
+        </div>
+        <div class="sim-field">
+          <label>Rentabilidad anual estimada</label>
+          <div class="range-row">
+            <input type="range" id="sim-rate" min="4" max="12" step="0.5" value="7" oninput="updateSim()">
+            <span class="val"><span id="sim-rate-out">7,0</span>%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Métricas simulador -->
+    <div class="metrics" style="margin-bottom:1.25rem">
+      <div class="metric">
+        <div class="metric-label">Lo que aportáis</div>
+        <div class="metric-value" id="sim-m-aportado" style="color:var(--ink-muted)">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Intereses generados</div>
+        <div class="metric-value gold" id="sim-m-intereses">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Capital final</div>
+        <div class="metric-value green" id="sim-m-final">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Multiplicador</div>
+        <div class="metric-value blue" id="sim-m-mult">—</div>
+      </div>
+    </div>
+
+    <!-- Gráfico simulador -->
+    <div class="card">
+      <p class="card-title">Evolución del capital</p>
+      <div class="legend">
+        <span><b style="background:#185FA5"></b>Capital aportado</span>
+        <span><b style="background:#0F6E56"></b>Intereses acumulados</span>
+      </div>
+      <div style="position:relative;width:100%;height:300px">
+        <canvas id="simChart" role="img" aria-label="Gráfico de barras apiladas mostrando la evolución del capital aportado e intereses a lo largo de los años"></canvas>
+      </div>
+
+      <div class="disclaimer">
+        Simulación orientativa basada en la rentabilidad histórica del S&amp;P 500. La rentabilidad pasada no garantiza resultados futuros. No incluye inflación, comisiones del fondo ni fiscalidad. El S&amp;P 500 ha ofrecido históricamente una rentabilidad media anual de ~10% nominal (~7% real ajustado a inflación).
+      </div>
+    </div>
+
+    <!-- Comparativa escenarios -->
+    <div class="card">
+      <p class="card-title">Comparativa de escenarios</p>
+      <div style="overflow-x:auto">
+        <table id="scenarios-table" style="width:100%;border-collapse:collapse;font-size:13px">
+          <!-- Generado por JS -->
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+  La economía del palomar &mdash; actualizado 2026
+</footer>
+
+<script>
+/* ═══════════════════════════════════════
+   DATOS
+═══════════════════════════════════════ */
+const AHORRO_KEYS = ['ahorro', 'indexado', 'inversión'];
+function esAhorro(n) { return AHORRO_KEYS.some(k => n.toLowerCase().includes(k)); }
+
+const ICONOS = {
+  'Hipoteca': '🏠',
+  'Vacaciones': '✈️',
+  'Gastos comunes': '🛒',
+  'Gastos BB': '👶',
+  'Coche': '🚗',
+  'Inversión BB': '📈',
+  'Ahorro': '🏦',
+  'Fondo': '📊',
+  'Seguro': '🛡️',
+};
+function getIcon(nombre) {
+  for (const k in ICONOS) { if (nombre.includes(k)) return ICONOS[k]; }
+  return '•';
+}
+
+const budgetData = {
+  v1: {
+    juan: 2448,
+    laura: 2325.77,
+    gastos: [
+      { nombre: 'Hipoteca', juan: 350, laura: 350 },
+      { nombre: 'Ahorro común', juan: 300, laura: 300 },
+      { nombre: 'Gastos comunes', juan: 250, laura: 250 },
+      { nombre: 'Seguro de hogar', juan: 8.51, laura: 8.51 },
+      { nombre: 'Coche (MG4)', juan: 200, laura: 200 },
+      { nombre: 'Ahorro personal Juan', juan: 1050, laura: 0 },
+      { nombre: 'Ahorro personal Laura', juan: 0, laura: 925 },
+    ]
+  },
+  v2: {
+    juan: 2386,
+    laura: 2375.77,
+    gastos: [
+      { nombre: 'Hipoteca', juan: 400, laura: 400 },
+      { nombre: 'Vacaciones / Seg. coche / IBI', juan: 187.50, laura: 187.50 },
+      { nombre: 'Gastos comunes', juan: 405, laura: 405 },
+      { nombre: 'Gastos BB', juan: 250, laura: 250 },
+      { nombre: 'Coche (MG4)', juan: 200, laura: 200 },
+      { nombre: 'Inversión BB', juan: 50, laura: 50 },
+      { nombre: 'Ahorro personal', juan: 300, laura: 300 },
+      { nombre: 'Fondo indexado', juan: 200, laura: 200 },
+    ]
+  }
+};
+
+let version = 'v2';
+let salarios = {
+  v1: { juan: budgetData.v1.juan, laura: budgetData.v1.laura },
+  v2: { juan: budgetData.v2.juan, laura: budgetData.v2.laura }
+};
+let distChart = null;
+
+/* ═══════════════════════════════════════
+   UTILIDADES
+═══════════════════════════════════════ */
+function fmt(n) { return Math.round(n).toLocaleString('es-ES') + ' €'; }
+function fmt2(n) { return n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'; }
+
+function calcBudget(v) {
+  const sj = salarios[v].juan, sl = salarios[v].laura;
+  const total = sj + sl;
+  const gastosMes = budgetData[v].gastos.reduce((a, g) => a + g.juan + g.laura, 0);
+  const ahorro = budgetData[v].gastos.filter(g => esAhorro(g.nombre)).reduce((a, g) => a + g.juan + g.laura, 0);
+  const ocio = total - gastosMes;
+  return { total, gastosMes, ahorro, ocio };
+}
+
+/* ═══════════════════════════════════════
+   RENDER PRESUPUESTO
+═══════════════════════════════════════ */
+function renderBudget() {
+  const v = version;
+  const d = budgetData[v];
+  const { total, gastosMes, ahorro, ocio } = calcBudget(v);
+  const pctAhorro = total > 0 ? (ahorro / total * 100) : 0;
+  const pctOcio = total > 0 ? (ocio / total * 100) : 0;
+  const sj = salarios[v].juan, sl = salarios[v].laura;
+
+  /* Métricas */
+  document.getElementById('metrics-grid').innerHTML = `
+    <div class="metric"><div class="metric-label">Ingresos totales</div><div class="metric-value">${fmt(total)}</div></div>
+    <div class="metric"><div class="metric-label">Gastos fijos</div><div class="metric-value">${fmt(gastosMes)}</div></div>
+    <div class="metric"><div class="metric-label">Ocio + caprichos</div><div class="metric-value ${ocio >= 0 ? 'green' : 'red'}">${fmt(ocio)}</div></div>
+    <div class="metric"><div class="metric-label">% en ahorro</div><div class="metric-value gold">${pctAhorro.toFixed(1)}%</div></div>
+  `;
+
+  /* Inputs salario */
+  document.getElementById('input-juan').value = sj;
+  document.getElementById('input-laura').value = sl;
+  document.getElementById('total-ingresos').textContent = fmt2(total);
+
+  /* Gastos */
+  document.getElementById('gastos-list').innerHTML = d.gastos.map(g => `
+    <div class="gasto-row">
+      <div class="gasto-left">
+        <div class="gasto-icon">${getIcon(g.nombre)}</div>
+        <div>
+          <div class="gasto-nombre">${g.nombre}</div>
+          <div class="gasto-detalle">Juan: ${fmt2(g.juan)} · Laura: ${fmt2(g.laura)}</div>
+        </div>
+      </div>
+      <div>
+        <div class="gasto-valor">${fmt2(g.juan + g.laura)}/mes</div>
+        <div class="gasto-anual">${fmt((g.juan + g.laura) * 12)}/año</div>
+      </div>
+    </div>
+  `).join('');
+
+  /* Ocio */
+  document.getElementById('ocio-val').textContent = fmt2(Math.max(0, ocio)) + '/mes';
+  document.getElementById('ocio-pct').textContent = pctOcio.toFixed(1) + '% de ingresos';
+
+  buildDistChart(v, ocio, ahorro);
+}
+
+function buildDistChart(v, ocio, ahorro) {
+  const d = budgetData[v];
+  const items = d.gastos.filter(g => !esAhorro(g.nombre));
+  const labels = items.map(g => g.nombre).concat(['Ahorro e inversión', 'Ocio + caprichos']);
+  const values = items.map(g => Math.round(g.juan + g.laura)).concat([Math.round(ahorro), Math.round(Math.max(0, ocio))]);
+  const colors = items.map(() => '#185FA5').concat(['#0F6E56', '#B08D3C']);
+
+  const wrap = document.getElementById('dist-chart-wrap');
+  wrap.style.height = (labels.length * 38 + 80) + 'px';
+
+  if (distChart) { distChart.destroy(); distChart = null; }
+  distChart = new Chart(document.getElementById('distChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 4, borderSkipped: false }] },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + Math.round(c.parsed.x).toLocaleString('es-ES') + ' €' } } },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,.06)' }, ticks: { callback: v => v.toLocaleString('es-ES') + ' €', font: { size: 11 }, autoSkip: true, maxTicksLimit: 6 } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+/* ═══════════════════════════════════════
+   INTERACCIONES PRESUPUESTO
+═══════════════════════════════════════ */
+function setVersion(v, btn) {
+  version = v;
+  document.querySelectorAll('.version-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBudget();
+}
+
+function onSalaryChange(who, val) {
+  salarios[version][who] = parseFloat(val) || 0;
+  const { total, ahorro, ocio } = calcBudget(version);
+  const pctOcio = total > 0 ? (ocio / total * 100) : 0;
+  document.getElementById('total-ingresos').textContent = fmt2(total);
+  document.getElementById('ocio-val').textContent = fmt2(Math.max(0, ocio)) + '/mes';
+  document.getElementById('ocio-pct').textContent = pctOcio.toFixed(1) + '% de ingresos';
+  const ms = document.querySelectorAll('.metric-value');
+  if (ms[0]) ms[0].textContent = fmt(total);
+  if (ms[2]) { ms[2].textContent = fmt(ocio); ms[2].className = 'metric-value ' + (ocio >= 0 ? 'green' : 'red'); }
+  buildDistChart(version, ocio, ahorro);
+}
+
+/* ═══════════════════════════════════════
+   SIMULADOR FONDOS
+═══════════════════════════════════════ */
+let simChart = null;
+
+function calcFV(monthly, years, annualRate) {
+  const r = annualRate / 100 / 12;
+  const n = years * 12;
+  return monthly * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+}
+
+function updateSim() {
+  const monthly = parseInt(document.getElementById('sim-aport').value);
+  const years = parseInt(document.getElementById('sim-years').value);
+  const rate = parseFloat(document.getElementById('sim-rate').value);
+
+  document.getElementById('sim-aport-out').textContent = monthly;
+  document.getElementById('sim-years-out').textContent = years;
+  document.getElementById('sim-rate-out').textContent = rate.toFixed(1).replace('.', ',');
+
+  const labels = [], aportado = [], intereses = [];
+  for (let y = 1; y <= years; y++) {
+    const fv = calcFV(monthly, y, rate);
+    const ap = monthly * y * 12;
+    labels.push('Año ' + y);
+    aportado.push(Math.round(ap));
+    intereses.push(Math.round(fv - ap));
+  }
+
+  const finalFV = calcFV(monthly, years, rate);
+  const finalAport = monthly * years * 12;
+  const finalInt = finalFV - finalAport;
+  const mult = (finalFV / finalAport).toFixed(1);
+
+  document.getElementById('sim-m-aportado').textContent = fmt(finalAport);
+  document.getElementById('sim-m-intereses').textContent = fmt(finalInt);
+  document.getElementById('sim-m-final').textContent = fmt(finalFV);
+  document.getElementById('sim-m-mult').textContent = 'x' + mult;
+
+  if (simChart) { simChart.destroy(); simChart = null; }
+  simChart = new Chart(document.getElementById('simChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Capital aportado', data: aportado, backgroundColor: '#185FA5', stack: 's' },
+        { label: 'Intereses', data: intereses, backgroundColor: '#0F6E56', stack: 's' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: c => ' ' + c.dataset.label + ': ' + Math.round(c.parsed.y).toLocaleString('es-ES') + ' €',
+            footer: items => ' Total: ' + Math.round(items.reduce((a, i) => a + i.parsed.y, 0)).toLocaleString('es-ES') + ' €'
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true, grid: { display: false },
+          ticks: { font: { size: 11 }, autoSkip: true, maxTicksLimit: 10 }
+        },
+        y: {
+          stacked: true,
+          grid: { color: 'rgba(0,0,0,.06)' },
+          ticks: { callback: v => Math.round(v / 1000) + 'k €', font: { size: 11 } }
+        }
+      }
+    }
+  });
+
+  buildScenariosTable(monthly, years);
+}
+
+function buildScenariosTable(monthly, years) {
+  const rates = [
+    { label: 'Pesimista', rate: 5, color: '#A32D2D' },
+    { label: 'Moderado', rate: 7, color: '#B08D3C' },
+    { label: 'Optimista', rate: 10, color: '#0F6E56' },
+  ];
+  const aport = monthly * years * 12;
+  let html = `
+    <thead>
+      <tr style="border-bottom:1px solid var(--rule)">
+        <th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)">Escenario</th>
+        <th style="text-align:right;padding:8px 10px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)">Rentabilidad</th>
+        <th style="text-align:right;padding:8px 10px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)">Capital final</th>
+        <th style="text-align:right;padding:8px 10px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)">Multiplicador</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
+  rates.forEach(s => {
+    const fv = calcFV(monthly, years, s.rate);
+    const mult = (fv / aport).toFixed(1);
+    html += `
+      <tr style="border-bottom:1px solid var(--rule)">
+        <td style="padding:10px;font-weight:500;color:${s.color}">${s.label}</td>
+        <td style="padding:10px;text-align:right;font-family:var(--font-mono);font-size:13px">${s.rate}%</td>
+        <td style="padding:10px;text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:500;color:${s.color}">${fmt(fv)}</td>
+        <td style="padding:10px;text-align:right;font-family:var(--font-mono);font-size:13px">x${mult}</td>
+      </tr>
+    `;
+  });
+  html += `
+    <tr style="background:var(--cream-dark)">
+      <td colspan="2" style="padding:10px;font-size:12px;color:var(--ink-muted)">Capital aportado (todos los escenarios)</td>
+      <td style="padding:10px;text-align:right;font-family:var(--font-mono);font-size:13px">${fmt(aport)}</td>
+      <td style="padding:10px;text-align:right;font-family:var(--font-mono);font-size:13px">x1</td>
+    </tr>
+  `;
+  html += '</tbody>';
+  document.getElementById('scenarios-table').innerHTML = html;
+}
+
+/* ═══════════════════════════════════════
+   NAVEGACIÓN
+═══════════════════════════════════════ */
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'simulador') updateSim();
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+renderBudget();
+</script>
+</body>
+</html>
